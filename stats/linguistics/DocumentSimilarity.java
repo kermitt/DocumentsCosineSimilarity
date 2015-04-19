@@ -32,6 +32,9 @@ public class DocumentSimilarity {
 			for (File f : allfiles) {
 				if (f.getName().endsWith(".txt")) {
 					fileNames.add(f.getName());
+					
+					log("Reading " + f.getName());
+					
 					in = new BufferedReader(new FileReader(f));
 					StringBuilder sb = new StringBuilder();
 					String s = null;
@@ -40,7 +43,7 @@ public class DocumentSimilarity {
 						sb.append("\n");
 					}
 
-					// regex! [ /me weak in regex ] 
+					// TODO! regex to fetch sentences... ...would be fun to do sentence level analysis also 
 					String[] tokenizedTerms = sb.toString()
 							.replaceAll("[\\W&&[^\\s]]", "").split("\\W+");
 
@@ -66,10 +69,13 @@ public class DocumentSimilarity {
 		double idf;
 		double tfidf;
 
-		for (String key : HoL_documentsStringArrays.keySet() ) {
-			String[] docTermsArray = HoL_documentsStringArrays.get( key );
+		for (String fileName : HoL_documentsStringArrays.keySet() ) {
+			String[] docTermsArray = HoL_documentsStringArrays.get( fileName );
 			double[] tfidfvectors = new double[grams.size()];
 			int count = 0;
+			
+			long t1 = System.currentTimeMillis();
+			
 			for (String gram : grams.keySet()) {
 				tf = getTF(docTermsArray, gram);
 				idf = getIDF( gram );
@@ -77,7 +83,12 @@ public class DocumentSimilarity {
 				tfidfvectors[count] = tfidf;
 				count++;
 			}
-			HoL_documentsVectors.put(key, tfidfvectors);
+			
+			HoL_documentsVectors.put(fileName, tfidfvectors);
+			
+			
+			log("Passing TFIDF fileName " + fileName + "   milsec " + ( System.currentTimeMillis() - t1 )); 
+
 		}
 	}
 
@@ -107,7 +118,8 @@ public class DocumentSimilarity {
 	}
 
 	public void display() {
-		for (int i = 0; i < fileNames.size(); i++) {
+//		for (int i = 0; i < fileNames.size(); i++) {
+			int i = fileNames.size() - 1;
 			log(" ------ ");
 			
 			String keyI = fileNames.get( i ); 
@@ -118,11 +130,11 @@ public class DocumentSimilarity {
 				double[] vectorJ =  HoL_documentsVectors.get( keyJ );
 				double result = cosineSimilarity( vectorI, vectorJ );
 				
-				String desc = describeVector( vectorI );
-				log(fileNames.get(i) + " vs. " + fileNames.get(j) + "  =  "
-						+ result + "  len? " + desc);
+				String desc = describeVector( vectorJ );
+				log(fileNames.get(j) + " vs. " + fileNames.get(i) + "  =  "
+						+ result + "  " + desc);
 			}
-		}
+//		}
 	}
 
 	public String describeVector(double[] v) {
@@ -133,7 +145,7 @@ public class DocumentSimilarity {
 				zero++;
 			}
 		}
-		return " length " + v.length + "  sparseness  " + zero;
+		return " unique terms=" + v.length + " vector contains " + ( v.length - zero ) + " of them";
 	}
 
 	public void log(String s) {
@@ -165,8 +177,24 @@ public class DocumentSimilarity {
 
 	public static void main(String... strings) {
 		DocumentSimilarity sim = new DocumentSimilarity();
-		sim.parseFiles("C://1000/1000//text//test//");
+//		sim.parseFiles("C://1000/1000//text//test//");
+		
+		long t1 = System.currentTimeMillis();
+		
+		sim.parseFiles("C://1000/1000//text//from1990//");
+		
+		long t2 = System.currentTimeMillis();
+		System.out.println("Reading files took milsec "+ ( t2 - t1 )); 
+
+		
+		t1 = System.currentTimeMillis();
+
 		sim.setLoL_documentsTFIDFvectors();
+		
+		t2 = System.currentTimeMillis();
+		System.out.println("Calculating TFIDF took milsec"+ ( t2 - t1 )); 
+
+		
 		sim.display();
 
 		System.out.println(" The end ");
