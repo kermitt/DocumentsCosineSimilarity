@@ -64,7 +64,7 @@ public class DocumentSimilarity {
 		}
 	}
 
-	public void setLoL_documentsTFIDFvectors() {
+	public void setHoL_documentsTFIDFvectors() {
 		double tf;
 		double idf;
 		double tfidf;
@@ -189,7 +189,7 @@ public class DocumentSimilarity {
 		
 		t1 = System.currentTimeMillis();
 
-		sim.setLoL_documentsTFIDFvectors();
+		sim.setHoL_documentsTFIDFvectors();
 		
 		t2 = System.currentTimeMillis();
 		System.out.println("Calculating TFIDF took milsec"+ ( t2 - t1 )); 
