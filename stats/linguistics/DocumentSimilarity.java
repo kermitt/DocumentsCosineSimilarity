@@ -22,9 +22,10 @@ public class DocumentSimilarity {
 	// Assoc array of each document its sparse term-vector 
 	public Map < String, double[]> HoL_documentsVectors = new HashMap<String, double[]>();
 
-	// Assoc array of each document its sparse term-vector 
-	public Map<String, String[]> HoL_documentsStringArrays = new HashMap<String, String[]>();
+	// Assoc Assoc array of each document its sparse term-vector 
+	public Map<String, Map<String, Gram>> HoH_documentsStringMap = new HashMap<String, Map<String,Gram>>();
 
+	
 	public void parseFiles(String filePath) {
 		try {
 			File[] allfiles = new File(filePath).listFiles();
@@ -46,15 +47,25 @@ public class DocumentSimilarity {
 					// TODO! regex to fetch sentences... ...would be fun to do sentence level analysis also 
 					String[] tokenizedTerms = sb.toString()
 							.replaceAll("[\\W&&[^\\s]]", "").split("\\W+");
-
+					Map<String, Gram> map = new HashMap<String, Gram>();
 					for (String term : tokenizedTerms) {
+						
+						term = term.toLowerCase();
+						
 						if (grams.containsKey(term)) {
 							grams.put(term, new Integer(1 + grams.get(term)));
 						} else {
 							grams.put(term, new Integer(1));
 						}
+						
+						
+						if ( map.containsKey(term)) {
+							map.get(term).seen++;
+						} else {
+							map.put( term, new Gram());
+						}
 					}
-					HoL_documentsStringArrays.put(f.getName(), tokenizedTerms);
+					HoH_documentsStringMap.put(f.getName(), map);
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -68,16 +79,18 @@ public class DocumentSimilarity {
 		double tf;
 		double idf;
 		double tfidf;
-
-		for (String fileName : HoL_documentsStringArrays.keySet() ) {
-			String[] docTermsArray = HoL_documentsStringArrays.get( fileName );
+// finch
+		for (String fileName : HoH_documentsStringMap.keySet() ) {
+		
+			Map < String , Gram > docTermsArray = HoH_documentsStringMap.get( fileName );
+			
 			double[] tfidfvectors = new double[grams.size()];
 			int count = 0;
 			
 			long t1 = System.currentTimeMillis();
 			
 			for (String gram : grams.keySet()) {
-				tf = getTF(docTermsArray, gram);
+				tf = getTF(docTermsArray, gram, fileName);
 				idf = getIDF( gram );
 				tfidf = tf * idf;
 				tfidfvectors[count] = tfidf;
@@ -91,30 +104,28 @@ public class DocumentSimilarity {
 
 		}
 	}
-
-	private double getTF(String[] totalterms, String gram) {
-		double countGramOccurances = 0; 
-		
-		for (String s : totalterms) {
-			if (s.equalsIgnoreCase(gram)) {
+	
+	private double getIDF( String gram) {
+		double countGramOccurances = 0;
+		for (String fileName : HoH_documentsStringMap.keySet() ) {
+			Map < String, Gram > map = HoH_documentsStringMap.get( fileName );
+			if ( map.containsKey(gram)) {
 				countGramOccurances++;
 			}
 		}
-		return countGramOccurances / totalterms.length;
+		//log( countGramOccurances + " ??  "  + gram ); 
+		return Math.log(HoH_documentsStringMap.size() / countGramOccurances);
 	}
 
-	private double getIDF( String gram) {
-		double countGramOccurances = 0;
-		for (String key : HoL_documentsStringArrays.keySet() ) {
-			String[] ary = HoL_documentsStringArrays.get( key );
-			for (String candidate : ary) {
-				if (candidate.equalsIgnoreCase(gram)) {
-					countGramOccurances++;
-					break;
-				}
-			}
+
+	
+	private double getTF( Map < String, Gram > totalterms, String gram, String fileName) {
+		double countGramOccurances = 0; 
+		if ( totalterms.containsKey(gram)) {
+			countGramOccurances = totalterms.get(gram).seen;
 		}
-		return Math.log(HoL_documentsStringArrays.size() / countGramOccurances);
+		
+		return countGramOccurances / totalterms.size();
 	}
 
 	public void display() {
@@ -181,7 +192,7 @@ public class DocumentSimilarity {
 		
 		long t1 = System.currentTimeMillis();
 		
-		sim.parseFiles("C://1000/1000//text//from1990//");
+		sim.parseFiles("C://1000/1000//text//test//");
 		
 		long t2 = System.currentTimeMillis();
 		System.out.println("Reading files took milsec "+ ( t2 - t1 )); 
@@ -198,6 +209,11 @@ public class DocumentSimilarity {
 		sim.display();
 
 		System.out.println(" The end ");
+	}
+
+	
+	class Gram { 
+		public double seen = 1.0;
 	}
 
 }
