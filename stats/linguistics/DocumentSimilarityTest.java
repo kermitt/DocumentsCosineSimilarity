@@ -9,7 +9,7 @@ public class DocumentSimilarityTest {
 	}
 	private void parseFiles() { 
 		documentSimilarity.parseFiles("C://1000/1000//text//test//");
-		boolean isOk = documentSimilarity.HoL_documentsStringArrays.size() == 3 && documentSimilarity.grams.size() == 36;
+		boolean isOk = documentSimilarity.HoH_documentsStringMap.size() == 3 && documentSimilarity.grams.size() == 36;
 		
 		log(isOk, "parseFiles");
 	}
