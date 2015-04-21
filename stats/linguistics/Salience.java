@@ -10,6 +10,7 @@ import java.util.TreeMap;
 public class Salience {
 
 	public static void main(String[] args) {
+		// main just a left over from TDD : now I suppose it is just a test
 		Salience salience = new Salience();
 		
 		HashMap<String, Gram> map = new HashMap<String, Gram>();
@@ -38,7 +39,8 @@ public class Salience {
 		String out = "";
 		for (String key : sortedMap.keySet()) {
 			if ( loop < limit ) {
-				out += key + ":" + map.get(key).tfidf;
+				//out += key + ":" + map.get(key).tfidf;
+				out += key;
 				if ( loop < limit - 1 ) {
 					out += ", ";
 				}
@@ -61,7 +63,7 @@ class GramComparator implements Comparator<String> {
 	}
 
 	public int compare(String a, String b) {
-		if (map.get(a).seen >= map.get(b).seen) {
+		if (map.get(a).tfidf >= map.get(b).tfidf) {
 			return -1;
 		} else {
 			return 1;

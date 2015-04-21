@@ -33,18 +33,22 @@ public class DocumentSimilarity {
 				if (f.getName().endsWith(".txt")) {
 					fileNames.add(f.getName());
 
-				//	log("Reading " + f.getName());
+					// log("Reading " + f.getName());
 
 					in = new BufferedReader(new FileReader(f));
 					StringBuilder sb = new StringBuilder();
 					String s = null;
 					while ((s = in.readLine()) != null) {
 						sb.append(s);
-						sb.append("\n");
+						sb.append(" ");
 					}
 
-					// TODO! regex to fetch sentences... ...would be fun to do
+					// TODO 1! regex to get apostrophes! "we've" is turning into
+					// 'weve' 
+
+					// TODO 2! regex to fetch sentences... ...would be fun to do
 					// sentence level analysis also
+
 					String[] tokenizedTerms = sb.toString()
 							.replaceAll("[\\W&&[^\\s]]", "").split("\\W+");
 					Map<String, Gram> map = new HashMap<String, Gram>();
@@ -87,33 +91,21 @@ public class DocumentSimilarity {
 			double[] tfidfvectors = new double[grams.size()];
 			int count = 0;
 
-			long t1 = System.currentTimeMillis();
-
 			for (String gram : grams.keySet()) {
-				
 
-				
 				tf = getTF(docTermsArray, gram, fileName);
 				idf = getIDF(gram);
 				tfidf = tf * idf;
-				
-				if ( HoH_documentsStringMap.get( fileName ).containsKey( gram )) {
-					HoH_documentsStringMap.get(fileName ).get( gram ).tfidf = 10 + tfidf; 
-					System.out.println( fileName + "   " + gram + "   "  );
+
+				if (HoH_documentsStringMap.get(fileName).containsKey(gram)) {
+					HoH_documentsStringMap.get(fileName).get(gram).tfidf = tfidf;
 				}
-				
-				//grams.get(gram).seen = 1.1;
-//				HoH_documentsStringMap.get( fileName ).get( gram ).seen = 1.0;//tfidf;
-				
+
 				tfidfvectors[count] = tfidf;
 				count++;
 			}
 
 			HoL_documentsVectors.put(fileName, tfidfvectors);
-
-		//	log("Passing TFIDF fileName " + fileName + "   milsec "
-		//			+ (System.currentTimeMillis() - t1));
-
 		}
 	}
 
@@ -141,7 +133,6 @@ public class DocumentSimilarity {
 
 	public void display() {
 		// No important logic - merely to get sorted terms ( on tfidf ) to print
-		// out
 		Salience salience = new Salience();
 
 		// for (int i = 0; i < fileNames.size(); i++) {
@@ -161,9 +152,9 @@ public class DocumentSimilarity {
 			// + result + "  " + desc);
 			String fileName = fileNames.get(j);
 			String sorted_terms = salience.sortByTFIDF(
-					HoH_documentsStringMap.get(fileName), 3);
+					HoH_documentsStringMap.get(fileName), 10);
 
-			log(fileName + ": " + tfidfScore + " : " + sorted_terms );
+			log(fileName + ": " + tfidfScore + " : " + sorted_terms);
 
 		}
 		// }
@@ -217,7 +208,7 @@ public class DocumentSimilarity {
 		sim.parseFiles("C://1000/1000//text//");
 
 		long t2 = System.currentTimeMillis();
-		//System.out.println("Reading files took milsec " + (t2 - t1));
+		// System.out.println("Reading files took milsec " + (t2 - t1));
 
 		t1 = System.currentTimeMillis();
 
